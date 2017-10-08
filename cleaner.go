@@ -5,13 +5,13 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
-	"strings"
 )
 
 type cleaner struct {
 	dir    string
 	dryRun bool
 
+	validRegex             *regexp.Regexp
 	invalidRegex           *regexp.Regexp
 	removeHacks            bool
 	removeHackRegex        *regexp.Regexp
@@ -36,6 +36,7 @@ func (c *cleaner) cleanDir(dir string) {
 		return
 	}
 
+	c.validRegex = regexp.MustCompile(`\[.*?!.*?\]`)
 	c.invalidRegex = regexp.MustCompile(`\[(b|o)\d?\d?\]`)
 
 	for _, file := range files {
@@ -63,7 +64,7 @@ func (c *cleaner) validateFile(file string) {
 
 	c.totalFiles++
 
-	if strings.Contains(file, "!") {
+	if c.validRegex.MatchString(file) {
 		return
 	}
 
